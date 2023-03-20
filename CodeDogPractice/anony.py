@@ -1,22 +1,21 @@
 import discord
 from discord.ext import commands
-from discord.ui import Select, View
+from discord.ui import Select, View, SelectOption
  
 
 app = commands.Bot(command_prefix='/', intents=discord.Intents.all())
 client = discord.Client(intents=discord.Intents.all())
 tags = []
+selected_tag = ""
 
-token = "MTA4NjUxODg0NzUwMDE4OTY5Nw.G4a7zG.hEbAwCJkPNvri4zxS0spHhNCOu_t7Mej__CRhM"
+token = ""
 
 @client.event
 async def on_ready():
     print('[Client] Bot is ready!')
     channel = discord.utils.get(client.guilds[0].channels, name="포럼-테스트용")
     for i in channel.available_tags :
-        tags.append(i)
-        print(i)
-    tags.append()
+        tags.append(SelectOption(label=i, value=i),)
     await client.login(token)
 
 
@@ -30,16 +29,12 @@ async def on_ready(): # 이 함수가 끝나기 전에 다른 함수를 호출�
 class TagView(View):
     def __init__(self):
         super().__init__()
-        options = []
-        '''
-        Select.Option(label="", value="1"),
-        Select.Option(label="Option 2", value="2"),
-        Select.Option(label="Option 3", value="3"),
-        '''
+        options = tags
         self.select = Select(options=options)
         self.add_item(self.select)
 
     async def on_select_option(self, interaction, option):
+        self.selected_tag = option.value
         await interaction.response.send_message(f"You selected {option.label} ({option.value})")
 
 
@@ -56,12 +51,16 @@ async def on_message(message):
         if ( message.content[:5] != "/익명질문" ) :
             return
         
+        author_id = message.author.id
+        
         # 채팅을 올릴 서버 채널 객체 가져오기
         channel = discord.utils.get(client.guilds[0].channels, name="포럼-테스트용")
 
         # 익명 질문을 위한 태그 input 메세지 내보내기
+        await discord.send("Please select an option.", view=TagView())
 
         # 선택한 태그로 태그 작성
+        print(selected_tag)
 
         # 질문 제목 받기
 
@@ -71,6 +70,5 @@ async def on_message(message):
         # print(channel.available_tags)
 
         await channel.create_thread(name="익명", content=message.content)
-
 
 client.run(token)

@@ -4,7 +4,7 @@ from discord.ext import commands
 app = commands.Bot(command_prefix='/', intents=discord.Intents.all())
 client = discord.Client(intents=discord.Intents.all())
 
-token = "MTA4NjUxODg0NzUwMDE4OTY5Nw.G4a7zG.hEbAwCJkPNvri4zxS0spHhNCOu_t7Mej__CRhM"
+token = ""
 
 @client.event
 async def on_ready():
