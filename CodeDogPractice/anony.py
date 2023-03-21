@@ -10,6 +10,7 @@ selected_tag = ""
 
 token = ""
 
+
 @client.event
 async def on_ready():
     print('[Client] Bot is ready!')
