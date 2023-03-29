@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
-from discord.ui import Select, View, SelectOption
+from discord.ui import Select, View
+from discord import SelectOption
  
 
 app = commands.Bot(command_prefix='/', intents=discord.Intents.all())
@@ -16,7 +17,7 @@ async def on_ready():
     print('[Client] Bot is ready!')
     channel = discord.utils.get(client.guilds[0].channels, name="포럼-테스트용")
     for i in channel.available_tags :
-        tags.append(SelectOption(label=i, value=i),)
+        tags.append(SelectOption(label=i, value=i))
     await client.login(token)
 
 
@@ -28,15 +29,17 @@ async def on_ready(): # 이 함수가 끝나기 전에 다른 함수를 호출�
 
 # tag 선택을 위한 view
 class TagView(View):
-    def __init__(self):
+    def __init__(self, options):
         super().__init__()
-        options = tags
-        self.select = Select(options=options)
+        self.select = Select(
+            placeholder="Please select an option...",
+            options=options
+        )
         self.add_item(self.select)
 
-    async def on_select_option(self, interaction, option):
-        self.selected_tag = option.value
-        await interaction.response.send_message(f"You selected {option.label} ({option.value})")
+    async def select_callback(self, select, option):
+        await select.response.defer()
+        await select.message.edit(content=f"You selected {option.label}.")
 
 
 # 익명 질문 기능 
@@ -55,10 +58,10 @@ async def on_message(message):
         author_id = message.author.id
         
         # 채팅을 올릴 서버 채널 객체 가져오기
-        channel = discord.utils.get(client.guilds[0].channels, name="포럼-테스트용")
+        qChannel = discord.utils.get(client.guilds[0].channels, name="포럼-테스트용")
 
         # 익명 질문을 위한 태그 input 메세지 내보내기
-        await discord.send("Please select an option.", view=TagView())
+        await message.channel.send("Please select an option.", view=TagView(tags))
 
         # 선택한 태그로 태그 작성
         print(selected_tag)
@@ -68,8 +71,6 @@ async def on_message(message):
         # 질문 내용 입력 받기 
 
 
-        # print(channel.available_tags)
-
-        await channel.create_thread(name="익명", content=message.content)
+        await qChannel.create_thread(name="익명", content=message.content)
 
 client.run(token)
